@@ -1,0 +1,59 @@
+name: BlindLab content video
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: ["feat/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  render-content-video:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Blender and video tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg libegl1 libegl-mesa0 libgl1 libgl1-mesa-dri
+          python -m pip install --upgrade pip pillow
+          blender --version
+          ffmpeg -version | head -1
+      - name: Compute optimized angle
+        run: |
+          python -m blindlab --output artifacts/experiment.json
+          python - <<'PY'
+          import json
+          d=json.load(open("artifacts/experiment.json"))
+          print(f"Optimized angle: {d['best']['angle_deg']} deg")
+          PY
+      - name: Render cinematic angle sweep
+        run: |
+          set -euo pipefail
+          BEST=$(python -c 'import json; print(int(round(json.load(open("artifacts/experiment.json"))["best"]["angle_deg"])))')
+          mkdir -p artifacts/video_frames
+          i=0
+          for angle in 0 15 30 45 60 75 "$BEST" "$BEST" "$BEST" 75 60 45 30 15 0; do
+            printf -v frame "artifacts/video_frames/frame_%03d.png" "$i"
+            echo "Rendering frame $i at angle $angle"
+            blender -b --python blender/scene_v03.py -- --angle "$angle" --output "$frame"
+            i=$((i+1))
+          done
+          printf '%s\n' "$BEST" > artifacts/video_optimized_angle.txt
+      - name: Build content video
+        run: |
+          ffmpeg -y -framerate 5 -i artifacts/video_frames/frame_%03d.png             -c:v libx264 -pix_fmt yuv420p -movflags +faststart             -crf 18 artifacts/blindlab_v0.4_demo.mp4
+          test -s artifacts/blindlab_v0.4_demo.mp4
+      - name: Upload content package
+        uses: actions/upload-artifact@v4
+        with:
+          name: blindlab-v0.4-content-video
+          path: |
+            artifacts/blindlab_v0.4_demo.mp4
+            artifacts/experiment.json
+            artifacts/video_optimized_angle.txt
