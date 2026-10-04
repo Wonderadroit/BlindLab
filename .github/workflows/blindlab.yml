@@ -66,7 +66,7 @@ jobs:
           canvas.paste(a,(0,0)); canvas.paste(b,(a.width,0))
           d=ImageDraw.Draw(canvas)
           d.rectangle((0,0,180,30),fill=(18,18,18)); d.text((10,8),"OPEN / BASELINE",fill=(245,245,245))
-          d.rectangle((a.width,0,a.width+210,30),fill=(18,18,18)); d.text((a.width+10,8),"BLINDLAB OPTIMIZED",fill=(245,245,245))
+          d.rectangle((a.width,0,a.width+230,30),fill=(18,18,18)); d.text((a.width+10,8),"BLINDLAB / OPTIMIZED",fill=(245,245,245))
           canvas.save("artifacts/before_after.png")
           print("before_after.png created")
           PY
