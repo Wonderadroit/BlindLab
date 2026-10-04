@@ -1,4 +1,4 @@
-name: BlindLab v0.2
+name: BlindLab validation
 
 on:
   push:
@@ -27,13 +27,12 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          from pathlib import Path
-          d=json.loads(Path("artifacts/experiment.json").read_text())
+          d=json.load(open("artifacts/experiment.json"))
           assert d["schema"]=="blindlab.experiment.v0.1"
           assert d["candidate_count"]==19
           assert 0 <= d["best"]["angle_deg"] <= 90
           assert 0 <= d["best"]["total"] <= 1
-          print("Evidence schema validated.")
+          print("Best angle:", d["best"]["angle_deg"])
           PY
       - name: Validate 3D geometry proxy
         run: |
@@ -45,7 +44,27 @@ jobs:
           assert 0 <= r["ray_hits"] <= r["slat_count"]
           print(r)
           PY
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+      - name: Render optimized scene
+        run: |
+          ANGLE=$(python -c 'import json; print(json.load(open("artifacts/experiment.json"))["best"]["angle_deg"])')
+          blender -b --python blender/scene_v03.py -- --angle "$ANGLE" --output artifacts/blindlab_optimized.png
+      - name: Validate rendered evidence
+        run: |
+          test -s artifacts/blindlab_optimized.png
+          test -s artifacts/blindlab_optimized.json
+          python - <<'PY'
+          import json
+          d=json.load(open("artifacts/blindlab_optimized.json"))
+          assert d["schema"]=="blindlab.render.v0.3"
+          assert d["calibrated_photometry"] is False
+          print("Rendered evidence validated.")
+          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: blindlab-v0.2-experiment
-          path: artifacts/experiment.json
+          name: blindlab-v0.3-evidence
+          path: artifacts/
