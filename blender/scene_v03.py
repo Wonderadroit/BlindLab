@@ -28,7 +28,13 @@ bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)
 
 scene=bpy.context.scene
-scene.render.engine="BLENDER_EEVEE" if "BLENDER_EEVEE" in {i.identifier for i in scene.bl_rna.properties["render"].enum_items} else "BLENDER_EEVEE_NEXT"
+# Blender 4.0 uses BLENDER_EEVEE; newer Blender releases may use
+# BLENDER_EEVEE_NEXT. Prefer the legacy enum when available, with a
+# conservative fallback for newer releases.
+try:
+    scene.render.engine = "BLENDER_EEVEE"
+except TypeError:
+    scene.render.engine = "BLENDER_EEVEE_NEXT"
 scene.render.resolution_x=960
 scene.render.resolution_y=640
 scene.render.resolution_percentage=100
