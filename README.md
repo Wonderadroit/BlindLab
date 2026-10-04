@@ -35,3 +35,10 @@ If Blender is installed:
 mathematical prediction -> geometric proxy -> rendered visual evidence -> measured calibration
 
 BlindLab should only promote a result to a stronger claim when the next evidence layer actually validates it.
+
+
+## Photorealistic production
+
+BlindLab also contains a production blueprint for cinematic content that intentionally moves away from the 3D-render aesthetic. The creative layer lives in `blindlab/creative.py` with the first 15-second film and vendor-neutral prompt pack under `creative/`.
+
+The creative renderer is treated as presentation output, not physical measurement evidence. Generated or edited imagery must never be presented as proof of real-world optical performance.
