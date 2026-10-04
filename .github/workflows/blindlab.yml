@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install test tooling
-        run: python -m pip install --upgrade pip pytest
+        run: python -m pip install --upgrade pip pytest pillow
       - name: Run regression tests
         run: pytest -q
       - name: Run deterministic experiment
@@ -49,19 +49,40 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y blender
           blender --version
-      - name: Render optimized scene
+      - name: Render baseline and optimized scenes
         run: |
           ANGLE=$(python -c 'import json; print(json.load(open("artifacts/experiment.json"))["best"]["angle_deg"])')
+          blender -b --python blender/scene_v03.py -- --angle 0 --output artifacts/baseline_open.png
           blender -b --python blender/scene_v03.py -- --angle "$ANGLE" --output artifacts/blindlab_optimized.png
+          printf '%s\n' "$ANGLE" > artifacts/optimized_angle.txt
+      - name: Build viewer comparison
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          a=Image.open("artifacts/baseline_open.png").convert("RGB")
+          b=Image.open("artifacts/blindlab_optimized.png").convert("RGB")
+          canvas=Image.new("RGB",(a.width*2,a.height),(18,18,18))
+          canvas.paste(a,(0,0)); canvas.paste(b,(a.width,0))
+          d=ImageDraw.Draw(canvas)
+          d.rectangle((0,0,180,30),fill=(18,18,18)); d.text((10,8),"OPEN / BASELINE",fill=(245,245,245))
+          d.rectangle((a.width,0,a.width+210,30),fill=(18,18,18)); d.text((a.width+10,8),"BLINDLAB OPTIMIZED",fill=(245,245,245))
+          canvas.save("artifacts/before_after.png")
+          print("before_after.png created")
+          PY
       - name: Validate rendered evidence
         run: |
+          test -s artifacts/baseline_open.png
           test -s artifacts/blindlab_optimized.png
+          test -s artifacts/before_after.png
+          test -s artifacts/baseline_open.json
           test -s artifacts/blindlab_optimized.json
           python - <<'PY'
           import json
-          d=json.load(open("artifacts/blindlab_optimized.json"))
-          assert d["schema"]=="blindlab.render.v0.3"
-          assert d["calibrated_photometry"] is False
+          for p in ("artifacts/baseline_open.json","artifacts/blindlab_optimized.json"):
+              d=json.load(open(p))
+              assert d["schema"]=="blindlab.render.v0.3"
+              assert d["calibrated_photometry"] is False
           print("Rendered evidence validated.")
           PY
       - uses: actions/upload-artifact@v4
