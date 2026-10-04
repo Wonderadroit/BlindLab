@@ -11,7 +11,9 @@ class Vec3:
         n=self.norm()
         if n==0: raise ValueError("zero vector cannot be normalized")
         return Vec3(self.x/n,self.y/n,self.z/n)
+    def __add__(self,o:"Vec3")->"Vec3": return Vec3(self.x+o.x,self.y+o.y,self.z+o.z)
     def __sub__(self,o:"Vec3")->"Vec3": return Vec3(self.x-o.x,self.y-o.y,self.z-o.z)
+    def __mul__(self,s:float)->"Vec3": return Vec3(self.x*s,self.y*s,self.z*s)
 
 @dataclass(frozen=True)
 class Ray:
@@ -26,15 +28,12 @@ class Slat:
     half_depth: float
 
 def ray_hits_slat(ray:Ray, slat:Slat)->bool:
-    """Finite-plane intersection for the v0.2 validation geometry."""
-    d=ray.direction.normalized()
-    n=slat.normal.normalized()
+    d=ray.direction.normalized(); n=slat.normal.normalized()
     denom=d.dot(n)
     if abs(denom)<1e-9: return False
     t=(slat.center-ray.origin).dot(n)/denom
     if t<=0: return False
-    p=ray.origin+Vec3(d.x*t,d.y*t,d.z*t)
-    # Local slab axes: horizontal x and vertical z. This matches the Blender prototype.
+    p=ray.origin+d*t
     return abs(p.x-slat.center.x)<=slat.half_width+1e-9 and abs(p.z-slat.center.z)<=slat.half_depth+1e-9
 
 def sun_direction(altitude_deg:float, azimuth_deg:float)->Vec3:
