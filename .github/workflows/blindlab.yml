@@ -1,8 +1,8 @@
-name: BlindLab v0.1
+name: BlindLab v0.2
 
 on:
   push:
-    branches: ["main","prototype/**"]
+    branches: ["main","feat/**"]
   pull_request:
   workflow_dispatch:
 
@@ -35,7 +35,17 @@ jobs:
           assert 0 <= d["best"]["total"] <= 1
           print("Evidence schema validated.")
           PY
+      - name: Validate 3D geometry proxy
+        run: |
+          python - <<'PY'
+          from blindlab.model import Blind
+          from blindlab.solar import SunPosition
+          from blindlab.experiment import geometry_validation
+          r=geometry_validation(Blind(45),SunPosition(50,180,True))
+          assert 0 <= r["ray_hits"] <= r["slat_count"]
+          print(r)
+          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: blindlab-v0.1-experiment
+          name: blindlab-v0.2-experiment
           path: artifacts/experiment.json
