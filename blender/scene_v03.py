@@ -35,8 +35,8 @@ try:
     scene.render.engine = "BLENDER_EEVEE"
 except TypeError:
     scene.render.engine = "BLENDER_EEVEE_NEXT"
-scene.render.resolution_x=960
-scene.render.resolution_y=640
+scene.render.resolution_x=1280
+scene.render.resolution_y=720
 scene.render.resolution_percentage=100
 scene.render.image_settings.file_format="PNG"
 scene.world.color=(0.035,0.035,0.035)
@@ -56,6 +56,10 @@ floor=mat("Oak floor",(0.30,0.16,0.07),0.58)
 frame=mat("Dark window frame",(0.035,0.045,0.05),0.28,0.35)
 slatmat=mat("Soft white slats",(0.86,0.87,0.84),0.34)
 sofa_mat=mat("Sofa fabric",(0.18,0.19,0.20),0.92)
+rugmat=mat("Wool rug",(0.46,0.39,0.30),0.96)
+plantmat=mat("Plant leaves",(0.08,0.20,0.09),0.88)
+potmat=mat("Ceramic pot",(0.38,0.34,0.30),0.72)
+exterior=mat("Exterior sky",(0.16,0.28,0.38),0.72)
 glass=bpy.data.materials.new("Window glass")
 glass.use_nodes=True
 pbs=glass.node_tree.nodes.get("Principled BSDF")
@@ -82,6 +86,8 @@ cube("WindowFrameBottom",(0,1.73,0.35),(1.65,0.10,0.07),frame,0.025)
 cube("WindowFrameLeft",(-1.58,1.73,1.68),(0.07,0.10,1.4),frame,0.025)
 cube("WindowFrameRight",(1.58,1.73,1.68),(0.07,0.10,1.4),frame,0.025)
 cube("Glass",(0,1.82,1.68),(1.50,0.025,1.25),glass)
+# A restrained exterior backdrop prevents the glazing from reading as a black void.
+cube("ExteriorBackdrop",(0,2.02,1.68),(1.48,0.03,1.23),exterior)
 
 count=24
 width=2.70
@@ -94,9 +100,14 @@ for i in range(count):
 
 cube("SofaBase",(0,-0.35,0.48),(1.35,0.48,0.35),sofa_mat,0.18)
 cube("SofaBack",(0,0.05,1.05),(1.35,0.18,0.48),sofa_mat,0.15)
+cube("Rug",(0,-0.65,0.095),(1.85,1.05,0.035),rugmat,0.025)
 cube("CoffeeTable",(0,-1.05,0.38),(0.85,0.45,0.08),floor,0.04)
 for x in (-0.72,0.72):
     cube("TableLeg",(x,-1.05,0.18),(0.06,0.06,0.18),floor,0.02)
+# Small lifestyle cues make the room read as a lived-in interior without competing with the blind.
+bpy.ops.mesh.primitive_uv_sphere_add(segments=20, ring_count=12, location=(1.95,-0.65,0.55), scale=(0.38,0.38,0.38))
+plant=bpy.context.object; plant.name="PlantCrown"; plant.data.materials.append(plantmat)
+cube("PlantPot",(1.95,-0.65,0.22),(0.22,0.22,0.22),potmat,0.05)
 
 bpy.ops.object.light_add(type="AREA",location=(-2.0,-1.0,4.5))
 fill=bpy.context.object; fill.name="SoftFill"; fill.data.energy=450; fill.data.shape="DISK"; fill.data.size=4.0
@@ -119,7 +130,7 @@ scene.view_settings.look="AgX - Medium High Contrast"
 bpy.ops.render.render(write_still=True)
 Path(str(Path(OUTPUT).with_suffix(".json"))).write_text(
     '{\n  "schema": "blindlab.render.v0.3",\n'
-    f'  "angle_deg": {ANGLE},\n  "engine": "BLENDER_EEVEE",\n'
+    f'  "angle_deg": {ANGLE},\n  "engine": "BLENDER_EEVEE",\n  "resolution": [1280, 720],\n'
     '  "calibrated_photometry": false\n}\n',
     encoding="utf-8",
 )
