@@ -29,7 +29,7 @@ jobs:
         run: pytest -q
       - name: Build and validate studio manifest
         run: |
-          python scripts/build_studio_manifest.py
+          PYTHONPATH=. python scripts/build_studio_manifest.py
           python -m pytest tests/test_studio.py -q
       - name: Run deterministic experiment
         run: python -m blindlab --output artifacts/experiment.json
@@ -147,7 +147,7 @@ jobs:
           WAN_MODEL_DIR: models/Wan2.2-TI2V-5B
         run: |
           . .venv-wan/bin/activate
-          python scripts/generate_first_film.py
+          PYTHONPATH=. python scripts/generate_first_film.py
       - name: Validate final media
         run: |
           test -s artifacts/blindlab_studio/blindlab_reality_has_a_glitch.mp4
