@@ -34,6 +34,19 @@ jobs:
           assert 0 <= d["best"]["total"] <= 1
           print("Best angle:", d["best"]["angle_deg"])
           PY
+      - name: Validate photorealistic production blueprint
+        run: |
+          python - <<'PY'
+          from blindlab.creative import FIRST_FILM, REALISM_RULES, production_prompt
+          assert len(FIRST_FILM) == 5
+          assert sum(s.duration_s for s in FIRST_FILM) == 15.0
+          assert "no 3D-rendered or videogame appearance" in REALISM_RULES
+          for shot in FIRST_FILM:
+              prompt = production_prompt(shot)
+              assert "Photorealistic cinematic frame" in prompt
+              assert "Do not make it look like CGI" in prompt
+          print("Photorealistic production blueprint validated.")
+          PY
       - name: Validate 3D geometry proxy
         run: |
           python - <<'PY'
