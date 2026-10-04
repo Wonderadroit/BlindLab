@@ -28,7 +28,7 @@ bpy.ops.object.select_all(action="SELECT")
 bpy.ops.object.delete(use_global=False)
 
 scene=bpy.context.scene
-scene.render.engine="BLENDER_EEVEE_NEXT"
+scene.render.engine="BLENDER_EEVEE" if "BLENDER_EEVEE" in {i.identifier for i in scene.bl_rna.properties["render"].enum_items} else "BLENDER_EEVEE_NEXT"
 scene.render.resolution_x=960
 scene.render.resolution_y=640
 scene.render.resolution_percentage=100
@@ -113,7 +113,7 @@ scene.view_settings.look="AgX - Medium High Contrast"
 bpy.ops.render.render(write_still=True)
 Path(str(Path(OUTPUT).with_suffix(".json"))).write_text(
     '{\n  "schema": "blindlab.render.v0.3",\n'
-    f'  "angle_deg": {ANGLE},\n  "engine": "BLENDER_EEVEE_NEXT",\n'
+    f'  "angle_deg": {ANGLE},\n  "engine": "BLENDER_EEVEE",\n'
     '  "calibrated_photometry": false\n}\n',
     encoding="utf-8",
 )
