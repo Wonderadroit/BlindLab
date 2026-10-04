@@ -47,6 +47,8 @@ jobs:
               assert "Do not make it look like CGI" in prompt
           print("Photorealistic production blueprint validated.")
           PY
+      - name: Validate photorealistic continuity quality gate
+        run: python -c 'from blindlab.quality import assert_production_blueprint; assert_production_blueprint(); print("Photorealistic continuity quality gate passed.")'
       - name: Validate 3D geometry proxy
         run: |
           python - <<'PY'
