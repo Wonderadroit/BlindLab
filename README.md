@@ -35,3 +35,17 @@ If Blender is installed:
 mathematical prediction -> geometric proxy -> rendered visual evidence -> measured calibration
 
 BlindLab should only promote a result to a stronger claim when the next evidence layer actually validates it.
+
+## Business Content Studio MVP
+
+BlindLab also contains a small production-oriented content generator for selling advertising packages to local businesses. It turns a business brief into reusable campaign copy and controlled visual-generation prompts.
+
+Example:
+
+    python -m studio --name "Lagos Auto Hub" --category cars --location Lagos --phone 08012345678 --offer "2015 Toyota Camry" --description "Clean interior, automatic transmission"
+
+The MVP deliberately does not claim that generated visuals are proof of physical product facts. Supplied reference photos should remain the source of truth for product identity.
+
+### First commercial target
+
+Start with a narrow service: **photorealistic car advertising packages for Nigerian dealers**. Sell the outcome, not the AI. The first validation milestone is a real paying customer, not feature completeness.
