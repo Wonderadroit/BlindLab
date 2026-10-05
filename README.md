@@ -49,3 +49,6 @@ The MVP deliberately does not claim that generated visuals are proof of physical
 ### First commercial target
 
 Start with a narrow service: **photorealistic car advertising packages for Nigerian dealers**. Sell the outcome, not the AI. The first validation milestone is a real paying customer, not feature completeness.
+
+
+**MVP status:** business-content generation path implemented on `feat/business-content-mvp`; next step is real customer-facing sample production and validation.
